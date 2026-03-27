@@ -1,1 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Group Hub">
+<title>Group Hub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+    min-height: 100vh;
+  }
+  header {
+    background: #111827;
+    color: white;
+    padding: 18px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  header p { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  nav {
+    display: flex;
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
+  }
+  nav button {
+    flex: 1;
+    padding: 12px 8px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+  }
+  nav button.active {
+    color: #ffffff;
+    border-bottom: 3px solid #3b82f6;
+  }
+
+  .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+  .tab.active { display: block; }
+
+  /* Weather */
+  .weather-card {
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    margin-bottom: 16px;
+  }
+  .weather-location { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+  .weather-temp { font-size: 64px; font-weight: 700; line-height: 1; }
+  .weather-desc { font-size: 18px; opacity: 0.9; margin-top: 6px; }
+  .weather-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .weather-detail {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .weather-detail-label { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em; }
+  .weather-detail-value { font-size: 20px; font-weight: 600; margin-top: 2px; }
+  .weather-loading {
+    background: #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* Schedule */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .event-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .event-time {
+    font-size: 12px;
+    font-weight: 600;
+    color: #3b82f6;
+    min-width: 52px;
+    padding-top: 2px;
+  }
+  .event-info { flex: 1; }
+  .event-title { font-size: 15px; font-weight: 600; color: #111827; }
+  .event-note { font-size: 13px; color: #6b7280; margin-top: 2px; }
+  .event-delete {
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .event-delete:hover { color: #ef4444; }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+
+  /* Add Event Form */
+  .add-form {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    margin-top: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .add-form h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: #111827; }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { display: block; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-row input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #f9fafb;
+  }
+  .form-row input:focus { border-color: #3b82f6; background: white; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: #111827;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #1f2937; }
+  .btn-primary:active { background: #374151; }
+
+  /* Messages */
+  .message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .message-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .message-sender { font-size: 13px; font-weight: 600; color: #3b82f6; }
+  .message-time { font-size: 11px; color: #9ca3af; }
+  .message-text { font-size: 14px; color: #374151; line-height: 1.5; }
+  .message-delete {
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-left: 8px;
+  }
+  .message-delete:hover { color: #ef4444; }
+
+  .msg-form {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .msg-form input, .msg-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #f9fafb;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+  .msg-form input:focus, .msg-form textarea:focus { border-color: #3b82f6; background: white; }
+  .msg-form textarea { resize: none; height: 80px; }
+
+  /* Announcements */
+  .announce-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    border-left: 4px solid #f59e0b;
+  }
+  .announce-card.pinned { border-left-color: #ef4444; }
+  .announce-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .announce-title { font-size: 15px; font-weight: 600; color: #111827; }
+  .announce-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+  .announce-body { font-size: 13px; color: #4b5563; line-height: 1.6; margin-top: 6px; }
+  .pin-badge {
+    font-size: 10px;
+    font-weight: 600;
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .announce-actions { display: flex; gap: 6px; align-items: center; }
+  .btn-small {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #e5e7eb;
+    background: none;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+  }
+  .btn-small:hover { background: #f9fafb; }
+  .btn-small.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+  .today-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Group Hub</h1>
+  <p id="header-date"></p>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('weather')">Weather</button>
+  <button onclick="showTab('schedule')">Schedule</button>
+  <button onclick="showTab('messages')">Messages</button>
+  <button onclick="showTab('announce')">Announcements</button>
+</nav>
+
+<!-- WEATHER TAB -->
+<div class="tab active" id="tab-weather">
+  <div style="margin-top: 4px;">
+    <div id="weather-container" class="weather-loading">Loading weather...</div>
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 8px;">Barrington, RI · Updates on refresh</p>
+  </div>
+</div>
+
+<!-- SCHEDULE TAB -->
+<div class="tab" id="tab-schedule">
+  <div class="today-badge" id="schedule-date"></div>
+  <div class="section-title">Today's Events</div>
+  <div id="events-list"></div>
+
+  <div class="add-form">
+    <h3>Add Event</h3>
+    <div class="form-row-2">
+      <div class="form-row" style="margin-bottom:0">
+        <label>Date</label>
+        <input type="date" id="event-date">
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label>Time</label>
+        <input type="time" id="event-time">
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <label>Event Title</label>
+      <input type="text" id="event-title" placeholder="e.g. Team Meeting">
+    </div>
+    <div class="form-row">
+      <label>Notes (optional)</label>
+      <input type="text" id="event-note" placeholder="e.g. Zoom link, location...">
+    </div>
+    <button class="btn-primary" onclick="addEvent()">Add to Schedule</button>
+  </div>
+</div>
+
+<!-- MESSAGES TAB -->
+<div class="tab" id="tab-messages">
+  <div class="section-title">Group Messages</div>
+  <div id="messages-list" class="message-list"></div>
+
+  <div class="msg-form">
+    <div class="form-row">
+      <label>Your Name</label>
+      <input type="text" id="msg-sender" placeholder="Your name">
+    </div>
+    <textarea id="msg-text" placeholder="Type your message..."></textarea>
+    <button class="btn-primary" onclick="addMessage()">Send Message</button>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENTS TAB -->
+<div class="tab" id="tab-announce">
+  <div class="section-title">Pinned</div>
+  <div id="pinned-list"></div>
+  <div class="section-title">All Announcements</div>
+  <div id="announce-list"></div>
+
+  <div class="add-form">
+    <h3>Post Announcement</h3>
+    <div class="form-row">
+      <label>Title</label>
+      <input type="text" id="ann-title" placeholder="Announcement title">
+    </div>
+    <div class="form-row">
+      <label>Message</label>
+      <input type="text" id="ann-body" placeholder="Details...">
+    </div>
+    <div class="form-row">
+      <label>Posted By</label>
+      <input type="text" id="ann-author" placeholder="Your name">
+    </div>
+    <button class="btn-primary" onclick="addAnnouncement()">Post Announcement</button>
+  </div>
+</div>
+
+<script>
+const WEATHER_API_KEY = "01f95b668d2143ed503d5c08e2721e78";
+const LAT = 41.7401;
+const LON = -71.3120;
+
+const WMO = {
+  0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
+  45:"Foggy",48:"Icy fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",
+  61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",
+  75:"Heavy snow",77:"Snow grains",80:"Light showers",81:"Showers",
+  82:"Heavy showers",85:"Snow showers",86:"Heavy snow showers",
+  95:"Thunderstorm",96:"Thunderstorm with hail",99:"Severe thunderstorm"
+};
+
+let events = JSON.parse(localStorage.getItem("gh_events") || "[]");
+let messages = JSON.parse(localStorage.getItem("gh_messages") || "[]");
+let announcements = JSON.parse(localStorage.getItem("gh_announcements") || "[]");
+
+function save() {
+  localStorage.setItem("gh_events", JSON.stringify(events));
+  localStorage.setItem("gh_messages", JSON.stringify(messages));
+  localStorage.setItem("gh_announcements", JSON.stringify(announcements));
+}
+
+function showTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  event.target.classList.add("active");
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric", year:"numeric"});
+}
+
+function formatTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":");
+  const hr = parseInt(h);
+  return `${hr % 12 || 12}:${m} ${hr < 12 ? "AM" : "PM"}`;
+}
+
+function today() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ---- WEATHER ----
+async function loadWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America/New_York&forecast_days=1`;
+    const r = await fetch(url);
+    const data = await r.json();
+    const c = data.current;
+    const d = data.daily;
+    const desc = WMO[c.weather_code] || "Mixed conditions";
+    document.getElementById("weather-container").innerHTML = `
+      <div class="weather-card">
+        <div class="weather-location">Barrington, RI</div>
+        <div class="weather-temp">${Math.round(c.temperature_2m)}&deg;F</div>
+        <div class="weather-desc">${desc}</div>
+        <div class="weather-details">
+          <div class="weather-detail">
+            <div class="weather-detail-label">Feels like</div>
+            <div class="weather-detail-value">${Math.round(c.apparent_temperature)}&deg;</div>
+          </div>
+          <div class="weather-detail">
+            <div class="weather-detail-label">Humidity</div>
+            <div class="weather-detail-value">${c.relative_humidity_2m}%</div>
+          </div>
+          <div class="weather-detail">
+            <div class="weather-detail-label">Wind</div>
+            <div class="weather-detail-value">${Math.round(c.wind_speed_10m)} mph</div>
+          </div>
+          <div class="weather-detail">
+            <div class="weather-detail-label">Rain chance</div>
+            <div class="weather-detail-value">${d.precipitation_probability_max[0]}%</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,0.07);">
+        <span style="color:#6b7280;">Today's High</span>
+        <span style="font-weight:600;">${Math.round(d.temperature_2m_max[0])}&deg;F</span>
+      </div>
+      <div style="background:white;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,0.07);margin-top:10px;">
+        <span style="color:#6b7280;">Today's Low</span>
+        <span style="font-weight:600;">${Math.round(d.temperature_2m_min[0])}&deg;F</span>
+      </div>
+    `;
+  } catch(e) {
+    document.getElementById("weather-container").innerHTML = `<div class="weather-loading">Could not load weather. Check connection.</div>`;
+  }
+}
+
+// ---- SCHEDULE ----
+function renderEvents() {
+  const list = document.getElementById("events-list");
+  const todayStr = today();
+  const todayEvents = events.filter(e => e.date === todayStr).sort((a,b) => a.time.localeCompare(b.time));
+  if (todayEvents.length === 0) {
+    list.innerHTML = `<div class="empty-state">No events today. Add one below!</div>`;
+    return;
+  }
+  list.innerHTML = todayEvents.map(e => `
+    <div class="event-card">
+      <div class="event-time">${formatTime(e.time)}</div>
+      <div class="event-info">
+        <div class="event-title">${e.title}</div>
+        ${e.note ? `<div class="event-note">${e.note}</div>` : ""}
+      </div>
+      <button class="event-delete" onclick="deleteEvent('${e.id}')">&#x2715;</button>
+    </div>
+  `).join("");
+}
+
+function addEvent() {
+  const date = document.getElementById("event-date").value;
+  const time = document.getElementById("event-time").value;
+  const title = document.getElementById("event-title").value.trim();
+  const note = document.getElementById("event-note").value.trim();
+  if (!title) { alert("Please enter an event title."); return; }
+  events.push({ id: Date.now().toString(), date: date || today(), time: time || "00:00", title, note });
+  save();
+  renderEvents();
+  document.getElementById("event-title").value = "";
+  document.getElementById("event-note").value = "";
+}
+
+function deleteEvent(id) {
+  events = events.filter(e => e.id !== id);
+  save();
+  renderEvents();
+}
+
+// ---- MESSAGES ----
+function renderMessages() {
+  const list = document.getElementById("messages-list");
+  if (messages.length === 0) {
+    list.innerHTML = `<div class="empty-state">No messages yet. Say hello!</div>`;
+    return;
+  }
+  list.innerHTML = [...messages].reverse().map(m => `
+    <div class="message-card">
+      <div class="message-header">
+        <div>
+          <span class="message-sender">${m.sender}</span>
+          <span class="message-time" style="margin-left:8px;">${m.time}</span>
+        </div>
+        <button class="message-delete" onclick="deleteMessage('${m.id}')">&#x2715;</button>
+      </div>
+      <div class="message-text">${m.text}</div>
+    </div>
+  `).join("");
+}
+
+function addMessage() {
+  const sender = document.getElementById("msg-sender").value.trim();
+  const text = document.getElementById("msg-text").value.trim();
+  if (!sender || !text) { alert("Please enter your name and a message."); return; }
+  const now = new Date();
+  const time = now.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"}) + " · " + now.toLocaleDateString("en-US", {month:"short", day:"numeric"});
+  messages.push({ id: Date.now().toString(), sender, text, time });
+  save();
+  renderMessages();
+  document.getElementById("msg-text").value = "";
+}
+
+function deleteMessage(id) {
+  messages = messages.filter(m => m.id !== id);
+  save();
+  renderMessages();
+}
+
+// ---- ANNOUNCEMENTS ----
+function renderAnnouncements() {
+  const pinned = announcements.filter(a => a.pinned);
+  const all = announcements.filter(a => !a.pinned);
+
+  const pinnedEl = document.getElementById("pinned-list");
+  pinnedEl.innerHTML = pinned.length === 0
+    ? `<div class="empty-state" style="padding:16px;">No pinned announcements.</div>`
+    : pinned.map(a => announceCard(a)).join("");
+
+  const allEl = document.getElementById("announce-list");
+  allEl.innerHTML = all.length === 0
+    ? `<div class="empty-state" style="padding:16px;">No announcements yet.</div>`
+    : [...all].reverse().map(a => announceCard(a)).join("");
+}
+
+function announceCard(a) {
+  return `
+    <div class="announce-card ${a.pinned ? 'pinned' : ''}">
+      <div class="announce-header">
+        <div>
+          <div class="announce-title">${a.title}</div>
+          <div class="announce-meta">By ${a.author} · ${a.date}</div>
+        </div>
+        <div class="announce-actions">
+          ${a.pinned ? `<span class="pin-badge">Pinned</span>` : ""}
+          <button class="btn-small" onclick="togglePin('${a.id}')">${a.pinned ? "Unpin" : "Pin"}</button>
+          <button class="btn-small danger" onclick="deleteAnnounce('${a.id}')">&#x2715;</button>
+        </div>
+      </div>
+      <div class="announce-body">${a.body}</div>
+    </div>
+  `;
+}
+
+function addAnnouncement() {
+  const title = document.getElementById("ann-title").value.trim();
+  const body = document.getElementById("ann-body").value.trim();
+  const author = document.getElementById("ann-author").value.trim();
+  if (!title || !author) { alert("Please enter a title and your name."); return; }
+  const date = new Date().toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"});
+  announcements.push({ id: Date.now().toString(), title, body, author, date, pinned: false });
+  save();
+  renderAnnouncements();
+  document.getElementById("ann-title").value = "";
+  document.getElementById("ann-body").value = "";
+}
+
+function togglePin(id) {
+  const a = announcements.find(a => a.id === id);
+  if (a) a.pinned = !a.pinned;
+  save();
+  renderAnnouncements();
+}
+
+function deleteAnnounce(id) {
+  announcements = announcements.filter(a => a.id !== id);
+  save();
+  renderAnnouncements();
+}
+
+// ---- INIT ----
+const now = new Date();
+document.getElementById("header-date").textContent = now.toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric"});
+document.getElementById("schedule-date").textContent = "Today — " + now.toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric"});
+document.getElementById("event-date").value = today();
+
+loadWeather();
+renderEvents();
+renderMessages();
+renderAnnouncements();
+</script>
+</body>
+</html>
 
