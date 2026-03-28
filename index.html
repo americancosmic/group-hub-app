@@ -14,15 +14,16 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f3f4f6;
     color: #111827;
-    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   header {
     background: #111827;
     color: white;
     padding: 18px 20px 14px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
   header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
@@ -31,6 +32,7 @@
     display: flex;
     background: #1f2937;
     border-bottom: 1px solid #374151;
+    flex-shrink: 0;
   }
   nav button {
     flex: 1;
@@ -41,13 +43,163 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
     border-bottom: 3px solid transparent;
   }
   nav button.active { color: #ffffff; border-bottom: 3px solid #3b82f6; }
- .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
-.tab.active { display: block; }
-#tab-messages.active { display: flex; padding: 0; }
+
+  /* Tab container fills remaining space */
+  #tab-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .tab {
+    display: none;
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .tab.active { display: block; }
+
+  /* Messages tab overrides — no padding, flex column */
+  #tab-messages {
+    display: none;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+  #tab-messages.active { display: flex; }
+
+  /* Scrollable message area */
+  #messages-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Bubble styles */
+  .bubble-row {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+  }
+  .bubble-row.mine { align-self: flex-end; align-items: flex-end; }
+  .bubble-row.theirs { align-self: flex-start; align-items: flex-start; }
+  .bubble-sender {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 2px;
+    padding: 0 12px;
+  }
+  .bubble {
+    padding: 10px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    line-height: 1.4;
+    position: relative;
+    word-break: break-word;
+  }
+  .bubble.mine {
+    background: #3b82f6;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble.theirs {
+    background: white;
+    color: #111827;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .bubble-time {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 3px;
+    padding: 0 12px;
+  }
+  .bubble-delete {
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .bubble-row:hover .bubble-delete { opacity: 1; }
+  .bubble-delete:hover { color: #ef4444; }
+  .bubble-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* iMessage composer */
+  #msg-composer {
+    flex-shrink: 0;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 10px 12px;
+  }
+  #msg-sender-wrap {
+    margin-bottom: 8px;
+  }
+  #msg-sender {
+    width: 100%;
+    padding: 7px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+    font-family: inherit;
+    color: #111827;
+  }
+  #msg-sender:focus { border-color: #3b82f6; }
+  #msg-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  #msg-text {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 15px;
+    resize: none;
+    height: 42px;
+    max-height: 120px;
+    background: white;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.4;
+    overflow-y: auto;
+  }
+  #msg-text:focus { border-color: #3b82f6; }
+  #msg-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  #msg-send-btn:hover { background: #2563eb; }
+  #msg-send-btn:active { background: #1d4ed8; }
+
+  /* Shared styles */
   .weather-card {
     background: linear-gradient(135deg, #1e40af, #1d4ed8);
     border-radius: 16px;
@@ -70,39 +222,27 @@
   .event-info { flex: 1; }
   .event-title { font-size: 15px; font-weight: 600; color: #111827; }
   .event-note { font-size: 13px; color: #6b7280; margin-top: 2px; }
-  .event-delete { background: none; border: none; color: #d1d5db; font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1; transition: color 0.2s; }
+  .event-delete { background: none; border: none; color: #d1d5db; font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1; }
   .event-delete:hover { color: #ef4444; }
   .empty-state { text-align: center; padding: 32px 16px; color: #9ca3af; font-size: 14px; }
   .add-form { background: white; border-radius: 14px; padding: 18px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
   .add-form h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: #111827; }
   .form-row { margin-bottom: 12px; }
   .form-row label { display: block; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .form-row input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #111827; outline: none; transition: border-color 0.2s; background: #f9fafb; }
+  .form-row input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #111827; outline: none; background: #f9fafb; font-family: inherit; }
   .form-row input:focus { border-color: #3b82f6; background: white; }
   .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .btn-primary { width: 100%; padding: 12px; background: #111827; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-primary { width: 100%; padding: 12px; background: #111827; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
   .btn-primary:hover { background: #1f2937; }
-  .message-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-  .message-card { background: white; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
-  .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .message-sender { font-size: 13px; font-weight: 600; color: #3b82f6; }
-  .message-time { font-size: 11px; color: #9ca3af; }
-  .message-text { font-size: 14px; color: #374151; line-height: 1.5; }
-  .message-delete { background: none; border: none; color: #d1d5db; font-size: 16px; cursor: pointer; transition: color 0.2s; margin-left: 8px; }
-  .message-delete:hover { color: #ef4444; }
-  .msg-form { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
-  .msg-form input, .msg-form textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #111827; outline: none; transition: border-color 0.2s; background: #f9fafb; margin-bottom: 10px; font-family: inherit; }
-  .msg-form input:focus, .msg-form textarea:focus { border-color: #3b82f6; background: white; }
-  .msg-form textarea { resize: none; height: 80px; }
   .announce-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); border-left: 4px solid #f59e0b; }
   .announce-card.pinned { border-left-color: #ef4444; }
   .announce-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
   .announce-title { font-size: 15px; font-weight: 600; color: #111827; }
   .announce-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
   .announce-body { font-size: 13px; color: #4b5563; line-height: 1.6; margin-top: 6px; }
-  .pin-badge { font-size: 10px; font-weight: 600; background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .pin-badge { font-size: 10px; font-weight: 600; background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; }
   .announce-actions { display: flex; gap: 6px; align-items: center; }
-  .btn-small { font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1.5px solid #e5e7eb; background: none; cursor: pointer; color: #6b7280; transition: all 0.2s; }
+  .btn-small { font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1.5px solid #e5e7eb; background: none; cursor: pointer; color: #6b7280; }
   .btn-small:hover { background: #f9fafb; }
   .btn-small.danger:hover { border-color: #ef4444; color: #ef4444; }
   .today-badge { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; margin-bottom: 12px; }
@@ -123,60 +263,65 @@
   <button onclick="showTab('announce',this)">Announcements</button>
 </nav>
 
-<div class="tab active" id="tab-weather">
-  <div style="margin-top:4px;">
+<div id="tab-container">
+
+  <!-- WEATHER -->
+  <div class="tab active" id="tab-weather">
     <div id="weather-container" class="weather-loading">Loading weather...</div>
     <p style="font-size:12px;color:#9ca3af;text-align:center;margin-top:8px;">Barrington, RI · Updates on refresh</p>
   </div>
-</div>
 
-<div class="tab" id="tab-schedule">
-  <div class="today-badge" id="schedule-date"></div>
-  <div class="section-title">Today's Events</div>
-  <div id="events-list"></div>
-  <div class="sync-dot">● Live sync on</div>
-  <div class="add-form">
-    <h3>Add Event</h3>
-    <div class="form-row-2">
-      <div class="form-row" style="margin-bottom:0"><label>Date</label><input type="date" id="event-date"></div>
-      <div class="form-row" style="margin-bottom:0"><label>Time</label><input type="time" id="event-time"></div>
-    </div>
-    <div class="form-row" style="margin-top:12px"><label>Event Title</label><input type="text" id="event-title" placeholder="e.g. Team Meeting"></div>
-    <div class="form-row"><label>Notes (optional)</label><input type="text" id="event-note" placeholder="e.g. location, link..."></div>
-    <button class="btn-primary" onclick="addEvent()">Add to Schedule</button>
-  </div>
-</div>
-
-<div class="tab" id="tab-messages" style="display:none; flex-direction:column; height:calc(100vh - 110px); padding:0;">
-  <div id="messages-list" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column-reverse; gap:10px;"></div>
-  <div style="padding:12px 16px; background:#f3f4f6; border-top:1px solid #e5e7eb;">
-    <input type="text" id="msg-sender" placeholder="Your name" style="width:100%; padding:8px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; margin-bottom:8px; background:#fff; outline:none; font-family:inherit;">
-    <div style="display:flex; gap:8px; align-items:flex-end;">
-      <textarea id="msg-text" placeholder="iMessage" style="flex:1; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:20px; font-size:14px; resize:none; height:42px; background:#fff; outline:none; font-family:inherit; line-height:1.4;"></textarea>
-      <button onclick="addMessage()" style="width:36px; height:36px; border-radius:50%; background:#3b82f6; border:none; cursor:pointer; color:white; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">&#8593;</button>
+  <!-- SCHEDULE -->
+  <div class="tab" id="tab-schedule">
+    <div class="today-badge" id="schedule-date"></div>
+    <div class="section-title">Today's Events</div>
+    <div id="events-list"></div>
+    <div class="sync-dot">● Live sync on</div>
+    <div class="add-form">
+      <h3>Add Event</h3>
+      <div class="form-row-2">
+        <div class="form-row" style="margin-bottom:0"><label>Date</label><input type="date" id="event-date"></div>
+        <div class="form-row" style="margin-bottom:0"><label>Time</label><input type="time" id="event-time"></div>
+      </div>
+      <div class="form-row" style="margin-top:12px"><label>Event Title</label><input type="text" id="event-title" placeholder="e.g. Team Meeting"></div>
+      <div class="form-row"><label>Notes (optional)</label><input type="text" id="event-note" placeholder="e.g. location, link..."></div>
+      <button class="btn-primary" onclick="addEvent()">Add to Schedule</button>
     </div>
   </div>
-</div>
-    <div class="form-row"><label>Your Name</label><input type="text" id="msg-sender" placeholder="Your name"></div>
-    <textarea id="msg-text" placeholder="Type your message..."></textarea>
-    <button class="btn-primary" onclick="addMessage()">Send Message</button>
-  </div>
-</div>
 
-<div class="tab" id="tab-announce">
-  <div class="section-title">Pinned</div>
-  <div id="pinned-list"></div>
-  <div class="section-title">All Announcements</div>
-  <div id="announce-list"></div>
-  <div class="sync-dot">● Live sync on</div>
-  <div class="add-form" style="margin-top:12px;">
-    <h3>Post Announcement</h3>
-    <div class="form-row"><label>Title</label><input type="text" id="ann-title" placeholder="Announcement title"></div>
-    <div class="form-row"><label>Message</label><input type="text" id="ann-body" placeholder="Details..."></div>
-    <div class="form-row"><label>Posted By</label><input type="text" id="ann-author" placeholder="Your name"></div>
-    <button class="btn-primary" onclick="addAnnouncement()">Post Announcement</button>
+  <!-- MESSAGES — iMessage style -->
+  <div class="tab" id="tab-messages">
+    <div id="messages-scroll">
+      <div class="empty-state" id="messages-empty">No messages yet. Say hello!</div>
+    </div>
+    <div id="msg-composer">
+      <div id="msg-sender-wrap">
+        <input type="text" id="msg-sender" placeholder="Your name">
+      </div>
+      <div id="msg-input-row">
+        <textarea id="msg-text" placeholder="iMessage"></textarea>
+        <button id="msg-send-btn" onclick="addMessage()">&#8593;</button>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="tab" id="tab-announce">
+    <div class="section-title">Pinned</div>
+    <div id="pinned-list"></div>
+    <div class="section-title">All Announcements</div>
+    <div id="announce-list"></div>
+    <div class="sync-dot">● Live sync on</div>
+    <div class="add-form" style="margin-top:12px;">
+      <h3>Post Announcement</h3>
+      <div class="form-row"><label>Title</label><input type="text" id="ann-title" placeholder="Announcement title"></div>
+      <div class="form-row"><label>Message</label><input type="text" id="ann-body" placeholder="Details..."></div>
+      <div class="form-row"><label>Posted By</label><input type="text" id="ann-author" placeholder="Your name"></div>
+      <button class="btn-primary" onclick="addAnnouncement()">Post Announcement</button>
+    </div>
+  </div>
+
+</div><!-- end tab-container -->
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -209,22 +354,46 @@
   function today() { return new Date().toISOString().split("T")[0]; }
   function formatTime(t) {
     if (!t) return "";
-    const [h, m] = t.split(":");
+    const [h,m] = t.split(":");
     const hr = parseInt(h);
-    return `${hr % 12 || 12}:${m} ${hr < 12 ? "AM" : "PM"}`;
+    return `${hr%12||12}:${m} ${hr<12?"AM":"PM"}`;
   }
 
   const now = new Date();
-  document.getElementById("header-date").textContent = now.toLocaleDateString("en-US", {weekday:"long",month:"long",day:"numeric"});
-  document.getElementById("schedule-date").textContent = "Today — " + now.toLocaleDateString("en-US", {weekday:"long",month:"long",day:"numeric"});
+  document.getElementById("header-date").textContent = now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  document.getElementById("schedule-date").textContent = "Today — " + now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   document.getElementById("event-date").value = today();
+
+  // Remember last sender name
+  const savedName = localStorage.getItem("gh_sender") || "";
+  document.getElementById("msg-sender").value = savedName;
 
   window.showTab = function(name, btn) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-    document.getElementById("tab-" + name).classList.add("active");
+    document.getElementById("tab-"+name).classList.add("active");
     if (btn) btn.classList.add("active");
+    if (name === "messages") scrollToBottom();
   };
+
+  function scrollToBottom() {
+    const el = document.getElementById("messages-scroll");
+    setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+  }
+
+  // Auto-grow textarea
+  const msgText = document.getElementById("msg-text");
+  msgText.addEventListener("input", function() {
+    this.style.height = "42px";
+    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  });
+  // Send on Enter (Shift+Enter for newline)
+  msgText.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      addMessage();
+    }
+  });
 
   // WEATHER
   async function loadWeather() {
@@ -252,85 +421,108 @@
           <span style="color:#6b7280;">Today's Low</span><span style="font-weight:600;">${Math.round(d.temperature_2m_min[0])}&deg;F</span>
         </div>`;
     } catch(e) {
-      document.getElementById("weather-container").innerHTML = `<div class="weather-loading">Could not load weather. Check connection.</div>`;
+      document.getElementById("weather-container").innerHTML = `<div class="weather-loading">Could not load weather.</div>`;
     }
   }
   loadWeather();
 
   // EVENTS
-  const eventsCol = collection(db, "events");
+  const eventsCol = collection(db,"events");
   onSnapshot(query(eventsCol, orderBy("date"), orderBy("time")), (snapshot) => {
     const todayStr = today();
-    const todayEvents = snapshot.docs.map(d => ({id:d.id,...d.data()})).filter(e => e.date === todayStr);
+    const todayEvents = snapshot.docs.map(d=>({id:d.id,...d.data()})).filter(e=>e.date===todayStr);
     const list = document.getElementById("events-list");
-    list.innerHTML = todayEvents.length === 0
+    list.innerHTML = todayEvents.length===0
       ? `<div class="empty-state">No events today. Add one below!</div>`
-      : todayEvents.map(e => `
+      : todayEvents.map(e=>`
           <div class="event-card">
             <div class="event-time">${formatTime(e.time)}</div>
             <div class="event-info">
               <div class="event-title">${e.title}</div>
-              ${e.note ? `<div class="event-note">${e.note}</div>` : ""}
+              ${e.note?`<div class="event-note">${e.note}</div>`:""}
             </div>
             <button class="event-delete" data-id="${e.id}">&#x2715;</button>
           </div>`).join("");
-    document.querySelectorAll(".event-delete").forEach(btn =>
-      btn.addEventListener("click", () => deleteDoc(doc(db,"events",btn.dataset.id))));
+    document.querySelectorAll(".event-delete").forEach(btn=>
+      btn.addEventListener("click",()=>deleteDoc(doc(db,"events",btn.dataset.id))));
   });
 
   window.addEvent = async function() {
-    const date = document.getElementById("event-date").value || today();
-    const time = document.getElementById("event-time").value || "00:00";
+    const date = document.getElementById("event-date").value||today();
+    const time = document.getElementById("event-time").value||"00:00";
     const title = document.getElementById("event-title").value.trim();
     const note = document.getElementById("event-note").value.trim();
     if (!title) { alert("Please enter an event title."); return; }
-    await addDoc(eventsCol, {date, time, title, note, created: Date.now()});
-    document.getElementById("event-title").value = "";
-    document.getElementById("event-note").value = "";
+    await addDoc(eventsCol,{date,time,title,note,created:Date.now()});
+    document.getElementById("event-title").value="";
+    document.getElementById("event-note").value="";
   };
 
-  // MESSAGES
-  const messagesCol = collection(db, "messages");
-  onSnapshot(query(messagesCol, orderBy("created","desc")), (snapshot) => {
-    const list = document.getElementById("messages-list");
-    list.innerHTML = snapshot.empty
-      ? `<div class="empty-state">No messages yet. Say hello!</div>`
-      : snapshot.docs.map(d => {
-          const m = {id:d.id,...d.data()};
-          return `<div class="message-card">
-            <div class="message-header">
-              <div><span class="message-sender">${m.sender}</span><span class="message-time" style="margin-left:8px;">${m.time}</span></div>
-              <button class="message-delete" data-id="${m.id}">&#x2715;</button>
-            </div>
-            <div class="message-text">${m.text}</div>
-          </div>`;
-        }).join("");
-    document.querySelectorAll(".message-delete").forEach(btn =>
-      btn.addEventListener("click", () => deleteDoc(doc(db,"messages",btn.dataset.id))));
+  // MESSAGES — iMessage style, oldest at top, newest at bottom
+  const messagesCol = collection(db,"messages");
+  let myName = localStorage.getItem("gh_sender")||"";
+
+  onSnapshot(query(messagesCol, orderBy("created","asc")), (snapshot) => {
+    const scroll = document.getElementById("messages-scroll");
+    const empty = document.getElementById("messages-empty");
+    const currentName = document.getElementById("msg-sender").value.trim();
+
+    if (snapshot.empty) {
+      empty.style.display = "block";
+      // Remove all bubbles
+      scroll.querySelectorAll(".bubble-row").forEach(el=>el.remove());
+      return;
+    }
+    empty.style.display = "none";
+    scroll.querySelectorAll(".bubble-row").forEach(el=>el.remove());
+
+    snapshot.docs.forEach(d => {
+      const m = {id:d.id,...d.data()};
+      const isMine = m.sender === (currentName || myName);
+      const row = document.createElement("div");
+      row.className = `bubble-row ${isMine?"mine":"theirs"}`;
+      row.innerHTML = `
+        ${!isMine?`<div class="bubble-sender">${m.sender}</div>`:""}
+        <div class="bubble-actions">
+          ${isMine?`<button class="bubble-delete" data-id="${m.id}">&#x2715;</button>`:""}
+          <div class="bubble ${isMine?"mine":"theirs"}">${m.text}</div>
+          ${!isMine?`<button class="bubble-delete" data-id="${m.id}">&#x2715;</button>`:""}
+        </div>
+        <div class="bubble-time">${m.time}</div>`;
+      scroll.appendChild(row);
+    });
+
+    scroll.querySelectorAll(".bubble-delete").forEach(btn=>
+      btn.addEventListener("click",()=>deleteDoc(doc(db,"messages",btn.dataset.id))));
+
+    scrollToBottom();
   });
 
   window.addMessage = async function() {
     const sender = document.getElementById("msg-sender").value.trim();
     const text = document.getElementById("msg-text").value.trim();
-    if (!sender || !text) { alert("Please enter your name and a message."); return; }
+    if (!sender||!text) { alert("Please enter your name and a message."); return; }
+    localStorage.setItem("gh_sender", sender);
+    myName = sender;
     const n = new Date();
-    const time = n.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}) + " · " + n.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-    await addDoc(messagesCol, {sender, text, time, created: Date.now()});
-    document.getElementById("msg-text").value = "";
+    const time = n.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})+" · "+n.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+    await addDoc(messagesCol,{sender,text,time,created:Date.now()});
+    document.getElementById("msg-text").value="";
+    msgText.style.height="42px";
+    scrollToBottom();
   };
 
   // ANNOUNCEMENTS
-  const announceCol = collection(db, "announcements");
-
+  const announceCol = collection(db,"announcements");
   function announceCard(a) {
-    return `<div class="announce-card ${a.pinned?'pinned':''}">
+    return `<div class="announce-card ${a.pinned?"pinned":""}">
       <div class="announce-header">
         <div>
           <div class="announce-title">${a.title}</div>
           <div class="announce-meta">By ${a.author} · ${a.date}</div>
         </div>
         <div class="announce-actions">
-          ${a.pinned ? `<span class="pin-badge">Pinned</span>` : ""}
+          ${a.pinned?`<span class="pin-badge">Pinned</span>`:""}
           <button class="btn-small btn-pin" data-id="${a.id}" data-pinned="${a.pinned}">${a.pinned?"Unpin":"Pin"}</button>
           <button class="btn-small danger btn-del-ann" data-id="${a.id}">&#x2715;</button>
         </div>
@@ -338,32 +530,31 @@
       <div class="announce-body">${a.body}</div>
     </div>`;
   }
-
-  onSnapshot(query(announceCol, orderBy("created","desc")), (snapshot) => {
-    const all = snapshot.docs.map(d => ({id:d.id,...d.data()}));
-    const pinned = all.filter(a => a.pinned);
-    const rest = all.filter(a => !a.pinned);
-    document.getElementById("pinned-list").innerHTML = pinned.length === 0
-      ? `<div class="empty-state" style="padding:16px;">No pinned announcements.</div>`
-      : pinned.map(announceCard).join("");
-    document.getElementById("announce-list").innerHTML = rest.length === 0
-      ? `<div class="empty-state" style="padding:16px;">No announcements yet.</div>`
-      : rest.map(announceCard).join("");
-    document.querySelectorAll(".btn-pin").forEach(btn =>
-      btn.addEventListener("click", () => updateDoc(doc(db,"announcements",btn.dataset.id), {pinned: btn.dataset.pinned === "true" ? false : true})));
-    document.querySelectorAll(".btn-del-ann").forEach(btn =>
-      btn.addEventListener("click", () => deleteDoc(doc(db,"announcements",btn.dataset.id))));
+  onSnapshot(query(announceCol,orderBy("created","desc")), (snapshot)=>{
+    const all = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    const pinned = all.filter(a=>a.pinned);
+    const rest = all.filter(a=>!a.pinned);
+    document.getElementById("pinned-list").innerHTML = pinned.length===0
+      ?`<div class="empty-state" style="padding:16px;">No pinned announcements.</div>`
+      :pinned.map(announceCard).join("");
+    document.getElementById("announce-list").innerHTML = rest.length===0
+      ?`<div class="empty-state" style="padding:16px;">No announcements yet.</div>`
+      :rest.map(announceCard).join("");
+    document.querySelectorAll(".btn-pin").forEach(btn=>
+      btn.addEventListener("click",()=>updateDoc(doc(db,"announcements",btn.dataset.id),{pinned:btn.dataset.pinned==="true"?false:true})));
+    document.querySelectorAll(".btn-del-ann").forEach(btn=>
+      btn.addEventListener("click",()=>deleteDoc(doc(db,"announcements",btn.dataset.id))));
   });
 
   window.addAnnouncement = async function() {
     const title = document.getElementById("ann-title").value.trim();
     const body = document.getElementById("ann-body").value.trim();
     const author = document.getElementById("ann-author").value.trim();
-    if (!title || !author) { alert("Please enter a title and your name."); return; }
+    if (!title||!author) { alert("Please enter a title and your name."); return; }
     const date = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-    await addDoc(announceCol, {title, body, author, date, pinned:false, created:Date.now()});
-    document.getElementById("ann-title").value = "";
-    document.getElementById("ann-body").value = "";
+    await addDoc(announceCol,{title,body,author,date,pinned:false,created:Date.now()});
+    document.getElementById("ann-title").value="";
+    document.getElementById("ann-body").value="";
   };
 </script>
 </body>
